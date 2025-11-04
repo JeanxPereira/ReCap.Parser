@@ -1,0 +1,173 @@
+<!-- src/ReCap.Parser.Editor/MainWindow.axaml -->
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:m="clr-namespace:ReCap.Parser.Editor.Models"
+  xmlns:vm="clr-namespace:ReCap.Parser.Editor.ViewModels"
+  xmlns:panels="clr-namespace:ReCap.Parser.Editor.Views.Panels"
+  x:Class="ReCap.Parser.Editor.MainWindow" Width="1200" Height="720" Title="ReCap Parser Editor"
+  Opened="OnOpened" Closing="OnClosing" TransparencyLevelHint="AcrylicBlur" Background="#161616"
+  ExtendClientAreaToDecorationsHint="True" ExtendClientAreaTitleBarHeightHint="36"
+  KeyDown="OnWindowKeyDown">
+
+  <Window.DataContext>
+    <vm:MainViewModel />
+  </Window.DataContext>
+
+  <Window.DataTemplates>
+    <DataTemplate DataType="m:StringValueNode">
+      <ComboBox IsEditable="True"
+        Text="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+        ItemsSource="{Binding DataContext.KeyAssetSuggestions, RelativeSource={RelativeSource AncestorType=Window}}"
+        BorderThickness="0" HorizontalAlignment="Left" VerticalAlignment="Center" />
+    </DataTemplate>
+    <DataTemplate DataType="m:NumberValueNode">
+      <NumericUpDown Value="{Binding Value, Mode=TwoWay}" BorderThickness="0" Padding="0"
+        HorizontalAlignment="Left" VerticalAlignment="Center" Width="160" />
+    </DataTemplate>
+    <DataTemplate DataType="m:BoolValueNode">
+      <CheckBox IsChecked="{Binding Value, Mode=TwoWay}" HorizontalAlignment="Left"
+        VerticalAlignment="Center" />
+    </DataTemplate>
+    <DataTemplate DataType="m:StructNode">
+      <Border />
+    </DataTemplate>
+    <DataTemplate DataType="m:ArrayNode">
+      <Border />
+    </DataTemplate>
+  </Window.DataTemplates>
+
+  <DockPanel LastChildFill="True">
+    <Border DockPanel.Dock="Top" Height="36" Background="#262626">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <Menu x:Name="TopMenu" Grid.Column="0">
+          <MenuItem Header="_File">
+            <MenuItem Header="_Open..." Click="OnOpenClick" />
+            <MenuItem Header="_Save As..." Click="OnSaveAsClick" />
+            <Separator />
+            <MenuItem Header="E_xit" Click="OnExitClick" />
+          </MenuItem>
+          <MenuItem Header="_Edit">
+            <MenuItem Header="_Undo" Command="{Binding UndoCommand}" />
+            <MenuItem Header="_Redo" Command="{Binding RedoCommand}" />
+          </MenuItem>
+        </Menu>
+
+        <Border Grid.Column="1" Background="Transparent"
+          PointerPressed="OnDragRegionPointerPressed"
+          DoubleTapped="OnDragRegionDoubleTapped">
+          <TextBlock Text="{Binding Title, RelativeSource={RelativeSource AncestorType=Window}}"
+            FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center"
+            IsHitTestVisible="False" />
+        </Border>
+
+        <Border Grid.Column="2" Width="{Binding #TopMenu.Bounds.Width}" />
+      </Grid>
+    </Border>
+
+    <Border x:Name="FindBar" DockPanel.Dock="Top" Background="#2b2b2b" IsVisible="False">
+      <panels:FindReplacePane />
+    </Border>
+
+    <Grid RowDefinitions="Auto,*">
+      <Grid x:Name="HeaderGrid" Width="{Binding #Tree.Bounds.Width}">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition
+            Width="{Binding KeyColWidth, Mode=TwoWay, RelativeSource={RelativeSource AncestorType=Window}}"
+            MinWidth="120" />
+          <ColumnDefinition Width="6" />
+          <ColumnDefinition
+            Width="{Binding TypeColWidth, Mode=TwoWay, RelativeSource={RelativeSource AncestorType=Window}}"
+            MinWidth="100" />
+          <ColumnDefinition Width="6" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" BorderBrush="#303030" BorderThickness="0,0,0,1">
+          <TextBlock Text="Key" FontWeight="SemiBold" VerticalAlignment="Center" Margin="8,0,8,0" />
+        </Border>
+        <Border Grid.Column="2" BorderBrush="#303030" BorderThickness="0,0,0,1">
+          <TextBlock Text="Type" FontWeight="SemiBold" VerticalAlignment="Center"
+            HorizontalAlignment="Center" Margin="8,0,8,0" />
+        </Border>
+        <Border Grid.Column="4" BorderBrush="#303030" BorderThickness="0,0,0,1">
+          <TextBlock Text="Value" FontWeight="SemiBold" VerticalAlignment="Center" Margin="8,0,8,0" />
+        </Border>
+
+        <Rectangle Grid.Column="1" Width="1" HorizontalAlignment="Center"
+          VerticalAlignment="Stretch" Fill="#303030" IsHitTestVisible="False" />
+        <GridSplitter Grid.Column="1"
+          ResizeDirection="Columns"
+          ResizeBehavior="PreviousAndNext"
+          ShowsPreview="False"
+          HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch"
+          Background="Transparent" />
+
+        <Rectangle Grid.Column="3" Width="1" HorizontalAlignment="Center"
+          VerticalAlignment="Stretch" Fill="#303030" IsHitTestVisible="False" />
+        <GridSplitter Grid.Column="3"
+          ResizeDirection="Columns"
+          ResizeBehavior="PreviousAndNext"
+          ShowsPreview="False"
+          HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch"
+          Background="Transparent" />
+      </Grid>
+
+      <TreeView x:Name="Tree" Grid.Row="1" ItemsSource="{Binding Roots}"
+        SelectionChanged="OnTreeSelectionChanged">
+        <TreeView.ContextMenu>
+          <ContextMenu>
+            <MenuItem Header="Expand" Click="OnExpandClick"/>
+            <MenuItem Header="Collapse" Click="OnCollapseClick"/>
+            <Separator/>
+            <MenuItem Header="Expand Branch" Click="OnExpandBranchClick"/>
+            <MenuItem Header="Collapse Branch" Click="OnCollapseBranchClick"/>
+            <Separator/>
+            <MenuItem Header="Expand All" Click="OnExpandAllClick"/>
+            <MenuItem Header="Collapse All" Click="OnCollapseAllClick"/>
+          </ContextMenu>
+        </TreeView.ContextMenu>
+        <TreeView.Styles>
+          <Style Selector="TreeViewItem">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="MinHeight" Value="28" />
+          </Style>
+        </TreeView.Styles>
+        <TreeView.ItemTemplate>
+          <TreeDataTemplate DataType="m:Node" ItemsSource="{Binding Children}">
+            <Border BorderBrush="#303030" BorderThickness="0,0,0,1">
+              <Grid HorizontalAlignment="Stretch">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition
+                    Width="{Binding KeyColWidth, RelativeSource={RelativeSource AncestorType=Window}}" />
+                  <ColumnDefinition
+                    Width="{Binding TypeColWidth, RelativeSource={RelativeSource AncestorType=Window}}" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock x:Name="KeyLabel" Grid.Column="0" Text="{Binding Key}" Padding="6,0"
+                  VerticalAlignment="Center" DoubleTapped="OnKeyLabelDoubleTapped" />
+                <TextBox x:Name="KeyEditor" Grid.Column="0"
+                  Text="{Binding Key, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                  BorderThickness="0" Padding="6,0" Background="Transparent"
+                  VerticalAlignment="Center" HorizontalAlignment="Stretch" IsVisible="False"
+                  LostFocus="OnKeyEditorCommit" KeyDown="OnKeyEditorKeyDown" />
+
+                <TextBlock Grid.Column="1" Text="{Binding Kind}" VerticalAlignment="Center"
+                  HorizontalAlignment="Center" Opacity="0.9" />
+                <ContentPresenter Grid.Column="2" Content="{Binding}" VerticalAlignment="Center"
+                  HorizontalAlignment="Left" />
+              </Grid>
+            </Border>
+          </TreeDataTemplate>
+        </TreeView.ItemTemplate>
+      </TreeView>
+    </Grid>
+  </DockPanel>
+</Window>

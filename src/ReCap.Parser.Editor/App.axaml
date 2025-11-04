@@ -1,0 +1,21 @@
+<Application
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:dev="clr-namespace:Devolutions.AvaloniaTheme.MacOS;assembly=Devolutions.AvaloniaTheme.MacOS"
+  RequestedThemeVariant="Dark"
+  x:Class="ReCap.Parser.Editor.App">
+  <Application.Styles>
+    <dev:DevolutionsMacOsTheme/>
+
+    <Style Selector="TreeView > TreeViewItem:nth-child(odd):not(:selected):not(:pointerover)">
+      <Setter Property="Background" Value="#202020" />
+    </Style>
+    <Style Selector="TreeViewItem TreeViewItem:nth-child(odd):not(:selected):not(:pointerover)">
+      <Setter Property="Background" Value="#202020" />
+    </Style>
+  </Application.Styles>
+    <Application.Resources>
+    <FontFamily x:Key="Geist">avares://ReCap.Parser.Editor/Assets/Fonts/Geist#Geist</FontFamily>
+    <FontFamily x:Key="GeistMono">avares://ReCap.Parser.Editor/Assets/Fonts/GeistMono#Geist Mono</FontFamily>
+  </Application.Resources>
+</Application>

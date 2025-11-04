@@ -1,0 +1,30 @@
+﻿<!-- src/ReCap.Parser.Editor/ReCap.Parser.Editor.csproj -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>ReCap.Parser.Editor</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.8" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.8" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.8" />
+    <PackageReference Include="Devolutions.AvaloniaTheme.MacOS" Version="2025.10.30" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ReCap.Parser.Core\ReCap.Parser.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets/Fonts/Geist/**/*.ttf" />
+    <AvaloniaResource Include="Assets/Fonts/GeistMono/**/*.ttf" />
+  </ItemGroup>
+</Project>
