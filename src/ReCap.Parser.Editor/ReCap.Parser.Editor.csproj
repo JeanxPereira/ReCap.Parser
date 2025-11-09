@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <OutputType>WinExe</OutputType>
     <AssemblyName>ReCap.Parser.Editor</AssemblyName>
+    <AvaloniaVersion>11.3.8</AvaloniaVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -13,9 +14,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="11.3.8" />
-    <PackageReference Include="Avalonia.Desktop" Version="11.3.8" />
-    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.8" />
+    <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)" />
     <PackageReference Include="Devolutions.AvaloniaTheme.MacOS" Version="2025.10.30" />
   </ItemGroup>
 
@@ -24,7 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AvaloniaResource Include="Assets/Fonts/Geist/**/*.ttf" />
-    <AvaloniaResource Include="Assets/Fonts/GeistMono/**/*.ttf" />
+    <AvaloniaResource Include="Assets/**/*.ttf" />
   </ItemGroup>
 </Project>

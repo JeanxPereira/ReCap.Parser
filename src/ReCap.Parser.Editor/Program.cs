@@ -1,10 +1,5 @@
 ﻿using System;
 using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Markup.Xaml;
-using Avalonia.Themes.Fluent;
-using Avalonia.Win32;
-using Avalonia.Media;
 
 namespace ReCap.Parser.Editor
 {
@@ -31,7 +26,6 @@ namespace ReCap.Parser.Editor
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
-                .With(new FontManagerOptions { DefaultFamilyName = "Geist" })
                 .With(new Win32PlatformOptions
                 {
                     RenderingMode = new[]
