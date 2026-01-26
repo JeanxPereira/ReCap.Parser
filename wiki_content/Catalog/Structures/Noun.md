@@ -1,0 +1,72 @@
+# Noun
+**Size:** `0x1e0`
+**Count:** `0x40`
+
+## Structure
+| Offset | DataType | Name |
+| :--- | :--- | :--- |
+| `0x00` | [`Enum<NounType>`](../Enums/NounType) | **nounType** |
+| `0x04` | `bool` | **clientOnly** |
+| `0x05` | `bool` | **isFixed** |
+| `0x06` | `bool` | **isSelfPowered** |
+| `0x08` | [`Enum<GfxPickMethod>`](../Enums/GfxPickMethod) | **gfxPickMethod** |
+| `0x0C` | `float` | **lifetime** |
+| `0x10` | `key` | **prefab** |
+| `0x14` | `float` | **graphicsScale** |
+| `0x24` | `key` | **modelKey** |
+| `0x34` | `key` | **levelEditorModelKey** |
+| `0x38` | [`cSPBoundingBox`](../Structures/cSPBoundingBox) | **bbox** |
+| `0x50` | [`Enum<PresetExtents>`](../Enums/PresetExtents) | **presetExtents** |
+| `0x60` | `key` | **voice** |
+| `0x70` | `key` | **foot** |
+| `0x80` | `key` | **flightSound** |
+| `0x84` | `nullable` | **gfxStates** |
+| `0x88` | `nullable` | **doorDef** |
+| `0x8C` | `nullable` | **switchDef** |
+| `0x90` | `nullable` | **pressureSwitchDef** |
+| `0x94` | `nullable` | **crystalDef** |
+| `0x98` | `uint64` | **assetId** |
+| `0xA0` | `asset` | **npcClassData** |
+| `0xA4` | `asset` | **playerClassData** |
+| `0xA8` | `asset` | **characterAnimationData** |
+| `0xAC` | `nullable` | **creatureThumbnailData** |
+| `0xB0` | `Array<uint64>` | **eliteAssetIds** |
+| `0xB8` | [`Enum<PhysicsType>`](../Enums/PhysicsType) | **physicsType** |
+| `0xBC` | `float` | **density** |
+| `0xCC` | `key` | **physicsKey** |
+| `0xD0` | `bool` | **affectsNavMesh** |
+| `0xD1` | `bool` | **dynamicWall** |
+| `0xD4` | `asset` | **aiDefinition** |
+| `0xD8` | `bool` | **hasNetworkComponent** |
+| `0xD9` | `bool` | **hasCameraComponent** |
+| `0xDA` | `bool` | **hasCombatantComponent** |
+| `0xDB` | `bool` | **hasLocomotion** |
+| `0xDC` | [`Enum<LocomotionType>`](../Enums/LocomotionType) | **locomotionType** |
+| `0xE0` | [`Enum<spawnTeamId>`](../Enums/spawnTeamId) | **spawnTeamId** |
+| `0xE4` | `bool` | **isIslandMarker** |
+| `0xE8` | `charptr` | **activateFnNamespace** |
+| `0xEC` | `charptr` | **tickFnNamespace** |
+| `0xF0` | `charptr` | **deactivateFnNamespace** |
+| `0xF4` | `charptr` | **startFnNamespace** |
+| `0xF8` | `charptr` | **endFnNamespace** |
+| `0xFC` | [`SharedComponentData`](../Structures/SharedComponentData) | **componentData** |
+| `0x124` | `nullable` | **triggerVolume** |
+| `0x128` | `nullable` | **projectile** |
+| `0x12C` | `nullable` | **orbit** |
+| `0x130` | `nullable` | **locomotionTuning** |
+| `0x134` | `asset` | **gravityData** |
+| `0x144` | `key` | **toonType** |
+| `0x148` | `bool` | **isFlora** |
+| `0x149` | `bool` | **isMineral** |
+| `0x14A` | `bool` | **isCreature** |
+| `0x14B` | `bool` | **isPlayer** |
+| `0x14C` | `bool` | **isSpawned** |
+| `0x15C` | `key` | **modelEffect** |
+| `0x16C` | `key` | **removalEffect** |
+| `0x18C` | `key` | **meleeDeathEffect** |
+| `0x19C` | `key` | **meleeCritEffect** |
+| `0x1AC` | `key` | **energyDeathEffect** |
+| `0x1BC` | `key` | **energyCritEffect** |
+| `0x1CC` | `key` | **plasmaDeathEffect** |
+| `0x1DC` | `key` | **plasmaCritEffect** |
+
