@@ -171,7 +171,7 @@ public static class WikiCatalog
             sb.AppendLine();
             foreach (var user in users.OrderBy(u => u))
             {
-                sb.AppendLine($"- [[`{user}`|{user}]]");
+                sb.AppendLine($"- [`{user}`]({user})");
             }
             sb.AppendLine();
         }
@@ -182,13 +182,13 @@ public static class WikiCatalog
         if (field.Type == DataType.Struct)
         {
             var name = field.ElementType ?? "Unknown";
-            return $"[[`{name}`|{name}]]";
+            return $"[`{name}`]({name})";
         }
         if (field.Type == DataType.Enum)
         {
             var name = field.EnumType ?? "Unknown";
             return field.EnumType != null 
-                ? $"`Enum<`[[`{name}`|{name}]]`>`"
+                ? $"`Enum<`[`{name}`]({name})`>`"
                 : "`Enum`";
         }
         if (field.Type == DataType.Array)
@@ -197,7 +197,7 @@ public static class WikiCatalog
             bool isComplexType = !Enum.TryParse<DataType>(inner, true, out _);
             
             if (isComplexType)
-                return $"`Array<`[[`{inner}`|{inner}]]`>`";
+                return $"`Array<`[`{inner}`]({inner})`>`";
             else
                 return $"`Array<{inner.ToLower()}>`";
         }
