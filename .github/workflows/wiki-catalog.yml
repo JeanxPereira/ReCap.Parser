@@ -24,7 +24,7 @@ jobs:
       - name: Generate wiki content
         run: |
           mkdir -p wiki_content
-          dotnet run --project src/CLI -- wiki wiki_content
+          dotnet run --project src/CLI -- wiki-gen wiki_content
 
       - name: Clone wiki repository
         run: |
