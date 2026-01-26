@@ -62,12 +62,11 @@ public partial class PackageBrowserWindow : Window
         var options = new FilePickerOpenOptions
         {
             AllowMultiple = false,
-            Title = "Open DBPF Package",
+            Title = "Open Darkspore Asset Package",
             SuggestedStartLocation = settings.GetStartFolder(StorageProvider),
             FileTypeFilter =
             [
-                new FilePickerFileType("DBPF Packages") { Patterns = ["*.package", "*.dbbf"] },
-                new FilePickerFileType("All Files") { Patterns = ["*.*"] }
+                new FilePickerFileType("Darkspore Asset Package") { Patterns = ["AssetData_Binary.package"] }
             ]
         };
         
@@ -76,6 +75,14 @@ public partial class PackageBrowserWindow : Window
         
         var path = files[0].TryGetLocalPath();
         if (string.IsNullOrWhiteSpace(path)) return;
+        
+        // Verify it's AssetData_Binary.package
+        var fileName = Path.GetFileName(path);
+        if (!fileName.Equals("AssetData_Binary.package", StringComparison.OrdinalIgnoreCase))
+        {
+            // Show error - wrong file
+            return;
+        }
         
         settings.LastOpenDirectory = Path.GetDirectoryName(path) ?? settings.LastOpenDirectory;
         SettingsService.Save(settings);

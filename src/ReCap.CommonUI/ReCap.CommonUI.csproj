@@ -1,11 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
-    <!-- Evita a chuva de CS86xx por enquanto -->
     <Nullable>disable</Nullable>
-    <!-- Garante que warnings não quebrem o build deste projeto -->
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <ImplicitUsings>enable</ImplicitUsings>
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,16 +15,13 @@
     <PackageReference Include="System.Reactive" Version="6.0.1" />
   </ItemGroup>
 
-  <!-- Evita que curingas de props/targets incluam XAML duas vezes -->
   <ItemGroup>
     <AvaloniaXaml Remove="**\*.axaml" />
     <AvaloniaResource Remove="**\*.axaml" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- ÚNICO XAML com x:Class -->
     <AvaloniaXaml Include="ReCapTheme.axaml" />
-    <!-- Recursos/estilos SEM x:Class -->
     <AvaloniaResource Include="Styles\**\*.axaml" />
     <AvaloniaResource Include="Res\UI\**\*" />
   </ItemGroup>

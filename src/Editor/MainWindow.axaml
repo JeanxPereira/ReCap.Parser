@@ -4,9 +4,11 @@
         xmlns:core="clr-namespace:ReCap.Parser;assembly=ReCap.Parser.Core"
         xmlns:vm="clr-namespace:ReCap.Parser.Editor.ViewModels"
         xmlns:panels="clr-namespace:ReCap.Parser.Editor.Views.Panels"
+        xmlns:local="clr-namespace:ReCap.Parser.Editor"
         x:Class="ReCap.Parser.Editor.MainWindow"
+        x:CompileBindings="False"
         Width="1200" Height="720"
-        Title="ReCap Parser Editor"
+        Title="AssetData Editor"
         Opened="OnOpened"
         Closing="OnClosing">
 
@@ -14,7 +16,6 @@
     <vm:MainViewModel />
   </Window.DataContext>
 
-  <!-- DataTemplates for different AssetNode types from Core -->
   <Window.DataTemplates>
     <!-- String/Asset Value Editor -->
     <DataTemplate DataType="core:StringNode">
@@ -110,11 +111,11 @@
       <Grid x:Name="HeaderGrid" Width="{Binding #Tree.Bounds.Width}">
         <Grid.ColumnDefinitions>
           <ColumnDefinition
-            Width="{Binding KeyColWidth, Mode=TwoWay, RelativeSource={RelativeSource AncestorType=Window}}"
+            Width="{Binding KeyColWidth, Mode=TwoWay, RelativeSource={RelativeSource AncestorType=local:MainWindow}}"
             MinWidth="120" />
           <ColumnDefinition Width="6" />
           <ColumnDefinition
-            Width="{Binding TypeColWidth, Mode=TwoWay, RelativeSource={RelativeSource AncestorType=Window}}"
+            Width="{Binding TypeColWidth, Mode=TwoWay, RelativeSource={RelativeSource AncestorType=local:MainWindow}}"
             MinWidth="100" />
           <ColumnDefinition Width="6" />
           <ColumnDefinition Width="*" />
@@ -176,9 +177,9 @@
               <Grid HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition
-                    Width="{Binding KeyColWidth, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    Width="{Binding KeyColWidth, RelativeSource={RelativeSource AncestorType=local:MainWindow}}" />
                   <ColumnDefinition
-                    Width="{Binding TypeColWidth, RelativeSource={RelativeSource AncestorType=Window}}" />
+                    Width="{Binding TypeColWidth, RelativeSource={RelativeSource AncestorType=local:MainWindow}}" />
                   <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Text.RegularExpressions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ReCap.Parser;
@@ -6,7 +7,7 @@ using ReCap.Parser;
 namespace ReCap.Parser.Editor.ViewModels;
 
 /// <summary>
-/// Represents an entry in the DBPF package browser.
+/// Represents an entry in the DBPF package browser (from Catalog).
 /// </summary>
 public partial class PackageEntryViewModel : ObservableObject
 {
@@ -17,27 +18,39 @@ public partial class PackageEntryViewModel : ObservableObject
     private string _type = string.Empty;
     
     [ObservableProperty]
-    private int _size;
+    private long _compileTime;
     
     [ObservableProperty]
-    private bool _isCompressed;
+    private int _version;
     
-    /// <summary>The underlying DBPF entry.</summary>
-    public DbpfEntry Entry { get; init; }
+    [ObservableProperty]
+    private uint _typeCrc;
+    
+    [ObservableProperty]
+    private uint _dataCrc;
+    
+    [ObservableProperty]
+    private string _sourceFile = string.Empty;
     
     /// <summary>Full virtual name (name.type).</summary>
-    public string FullName => $"{Name}.{Type}";
+    public string FullName => string.IsNullOrEmpty(Type) ? Name : $"{Name}.{Type}";
+    
+    /// <summary>Formatted compile time.</summary>
+    public string CompileTimeFormatted => DateTimeOffset.FromUnixTimeSeconds(CompileTime).ToString("yyyy-MM-dd HH:mm:ss");
 }
 
 /// <summary>
 /// ViewModel for the DBPF Package Browser window.
+/// Uses Catalog for optimized asset listing.
 /// </summary>
 public partial class PackageBrowserViewModel : ObservableObject
 {
+    private static readonly Regex CatalogPattern = new(@"^catalog_\d+$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    
     private DbpfReader? _dbpf;
     private readonly AssetService _assetService;
     
-    /// <summary>All entries in the package.</summary>
+    /// <summary>All entries in the package (from Catalog).</summary>
     public ObservableCollection<PackageEntryViewModel> AllEntries { get; } = [];
     
     /// <summary>Filtered entries based on search/type filter.</summary>
@@ -84,7 +97,7 @@ public partial class PackageBrowserViewModel : ObservableObject
     }
     
     /// <summary>
-    /// Open a DBPF package file.
+    /// Open a DBPF package file and load its catalog.
     /// </summary>
     public async Task OpenPackageAsync(string path)
     {
@@ -105,48 +118,44 @@ public partial class PackageBrowserViewModel : ObservableObject
             _dbpf = await Task.Run(() => new DbpfReader(path));
             PackagePath = path;
             PackageName = Path.GetFileName(path);
-            TotalEntries = _dbpf.Entries.Count;
             
             // Try to load registries from same directory
             var registryDir = Path.Combine(Path.GetDirectoryName(path) ?? "", "registries");
             if (Directory.Exists(registryDir))
                 _dbpf.LoadRegistries(registryDir);
             
-            // Build entries list
-            var typeSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var entries = new List<PackageEntryViewModel>();
+            StatusText = "Loading catalog...";
             
-            await Task.Run(() =>
+            // Find and load catalog
+            var entries = await LoadCatalogAsync();
+            
+            if (entries == null || entries.Count == 0)
             {
-                foreach (var assetInfo in _dbpf.ListAssets())
-                {
-                    var parts = assetInfo.Split('.', 2);
-                    var name = parts[0];
-                    var type = parts.Length > 1 ? parts[1] : "unknown";
-                    
-                    typeSet.Add(type);
-                    
-                    entries.Add(new PackageEntryViewModel
-                    {
-                        Name = name,
-                        Type = type
-                    });
-                }
-            });
+                StatusText = "Error: Could not find or parse catalog_*.bin";
+                return;
+            }
             
-            // Add to UI on UI thread
+            // Add entries on UI thread
             foreach (var entry in entries)
                 AllEntries.Add(entry);
             
-            // Build type filters
+            TotalEntries = AllEntries.Count;
+            
+            // Build type filters from loaded entries
+            var types = AllEntries
+                .Select(e => e.Type)
+                .Where(t => !string.IsNullOrEmpty(t))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(t => t);
+            
             TypeFilters.Add("All");
-            foreach (var type in typeSet.OrderBy(t => t))
+            foreach (var type in types)
                 TypeFilters.Add(type);
             
             SelectedTypeFilter = "All";
             ApplyFilter();
             
-            StatusText = $"Loaded {TotalEntries:N0} entries";
+            StatusText = $"Loaded {TotalEntries:N0} assets from catalog";
         }
         catch (Exception ex)
         {
@@ -155,6 +164,111 @@ public partial class PackageBrowserViewModel : ObservableObject
         finally
         {
             IsLoading = false;
+        }
+    }
+    
+    /// <summary>
+    /// Find and load the catalog_*.bin file from the package.
+    /// </summary>
+    private async Task<List<PackageEntryViewModel>?> LoadCatalogAsync()
+    {
+        if (_dbpf == null) return null;
+        
+        // Try direct hash lookup for common catalog names
+        byte[]? catalogData = null;
+        
+        for (int i = 131; i <= 150; i++)
+        {
+            var testName = $"catalog_{i}.bin";
+            var data = _dbpf.GetAsset(testName);
+            if (data != null && data.Length > 0)
+            {
+                catalogData = data;
+                break;
+            }
+        }
+        
+        // Also try catalog_0
+        if (catalogData == null)
+        {
+            var data = _dbpf.GetAsset("catalog_0.bin");
+            if (data != null && data.Length > 0)
+                catalogData = data;
+        }
+        
+        if (catalogData == null)
+            return null;
+        
+        // Parse catalog on background thread
+        return await Task.Run(() => ParseCatalog(catalogData));
+    }
+    
+    /// <summary>
+    /// Parse catalog binary data and return list of entries.
+    /// </summary>
+    private List<PackageEntryViewModel>? ParseCatalog(byte[] data)
+    {
+        try
+        {
+            var catalogRoot = _assetService.Parser.Parse(data, "Catalog", 8);
+            
+            // Find entries array
+            var entriesArray = catalogRoot.Children
+                .OfType<ArrayNode>()
+                .FirstOrDefault(n => n.Name == "entries");
+            
+            if (entriesArray == null)
+                return null;
+            
+            var entries = new List<PackageEntryViewModel>();
+            
+            foreach (var entryNode in entriesArray.Children.OfType<StructNode>())
+            {
+                var vm = new PackageEntryViewModel();
+                
+                foreach (var field in entryNode.Children)
+                {
+                    switch (field.Name)
+                    {
+                        case "assetNameWType" when field is StringNode sn:
+                            // Parse "name.type" format
+                            var parts = sn.Value.Split('.', 2);
+                            vm.Name = parts[0];
+                            vm.Type = parts.Length > 1 ? parts[1] : "";
+                            break;
+                            
+                        case "compileTime" when field is NumberNode nn:
+                            vm.CompileTime = (long)nn.Value;
+                            break;
+                            
+                        case "version" when field is NumberNode nn:
+                            vm.Version = (int)nn.Value;
+                            break;
+                            
+                        case "typeCrc" when field is NumberNode nn:
+                            vm.TypeCrc = (uint)nn.Value;
+                            break;
+                            
+                        case "dataCrc" when field is NumberNode nn:
+                            vm.DataCrc = (uint)nn.Value;
+                            break;
+                            
+                        case "sourceFileNameWType" when field is StringNode sn:
+                            vm.SourceFile = sn.Value;
+                            break;
+                    }
+                }
+                
+                // Only add if we have a valid name
+                if (!string.IsNullOrEmpty(vm.Name))
+                    entries.Add(vm);
+            }
+            
+            return entries;
+        }
+        catch
+        {
+            return null;
         }
     }
     
@@ -174,7 +288,7 @@ public partial class PackageBrowserViewModel : ObservableObject
             var data = _dbpf.GetAsset(SelectedEntry.FullName);
             if (data == null)
             {
-                StatusText = "Failed to read asset data";
+                StatusText = $"Failed to read asset: {SelectedEntry.FullName}";
                 return;
             }
             
@@ -216,12 +330,13 @@ public partial class PackageBrowserViewModel : ObservableObject
         
         // Search filter
         if (!string.IsNullOrWhiteSpace(SearchText))
-            query = query.Where(e => e.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
+            query = query.Where(e => e.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+                                     e.FullName.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
         
         foreach (var entry in query.OrderBy(e => e.Name))
             FilteredEntries.Add(entry);
         
-        StatusText = $"Showing {FilteredEntries.Count:N0} of {TotalEntries:N0} entries";
+        StatusText = $"Showing {FilteredEntries.Count:N0} of {TotalEntries:N0} assets";
     }
     
     partial void OnSearchTextChanged(string value) => ApplyFilter();

@@ -7,12 +7,27 @@
   
   <Application.Styles>
     <rc:ReCapTheme/>
+    
+    <!-- DataGrid styles -->
+    <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
 
     <Style Selector="TreeView > TreeViewItem:nth-child(odd):not(:selected):not(:pointerover)">
       <Setter Property="Background" Value="#202020" />
     </Style>
     <Style Selector="TreeViewItem TreeViewItem:nth-child(odd):not(:selected):not(:pointerover)">
       <Setter Property="Background" Value="#202020" />
+    </Style>
+    
+    <!-- DataGrid dark theme adjustments -->
+    <Style Selector="DataGridColumnHeader">
+      <Setter Property="Background" Value="#2a2a2a" />
+      <Setter Property="Foreground" Value="#e0e0e0" />
+    </Style>
+    <Style Selector="DataGridRow:nth-child(even)">
+      <Setter Property="Background" Value="#1e1e1e" />
+    </Style>
+    <Style Selector="DataGridRow:nth-child(odd)">
+      <Setter Property="Background" Value="#252525" />
     </Style>
   </Application.Styles>
 

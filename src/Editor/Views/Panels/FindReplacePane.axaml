@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ReCap.Parser.Editor.Views.Panels.FindReplacePane">
+             x:Class="ReCap.Parser.Editor.Views.Panels.FindReplacePane"
+             x:CompileBindings="False">
   <Border Padding="10">
     <Grid RowDefinitions="Auto,8,Auto,8,Auto,12,Auto,8,Auto"
           ColumnDefinitions="64,8,*">
