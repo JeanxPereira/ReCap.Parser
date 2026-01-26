@@ -42,7 +42,7 @@ flowchart TB
 
 ## Key Changes
 
-### Before (Slow)
+### Before
 ```mermaid
 flowchart LR
     Bin[Binary Asset] --> CLI["Core CLI<br/>(Process)"]
@@ -53,7 +53,7 @@ flowchart LR
     style XML fill:#f9f,stroke:#333
 ```
 
-### After (Fast)
+### After
 ```mermaid
 flowchart LR
     Bin[Binary Asset] --> API["Core API<br/>(Direct)"]
@@ -70,33 +70,6 @@ flowchart LR
 - **Span<byte>** - Optimized binary reading
 - **Dependency Injection** - Microsoft.Extensions.DependencyInjection
 - **ReCap.CommonUI** - using native UI of ReCap Project made by Splitwirez
-
-## Folder Structure
-
-```
-src/
-├── Core/                       # Parsing library (DLL)
-│   ├── AssetNode.cs            # Observable model (MVVM-ready)
-│   ├── AssetParser.cs          # Optimized binary parser
-│   ├── AssetService.cs         # High-level API
-│   ├── TypeSystem.cs           # Type definitions
-│   └── Catalog/                # Struct definitions by type
-│       ├── Noun.cs
-│       ├── Phase.cs
-│       └── ...
-│
-├── Editor/                     # Avalonia UI
-│   ├── ViewModels/             # MVVM ViewModels
-│   │   └── MainViewModel.cs    # Main ViewModel
-│   ├── Views/                  # XAML Views
-│   ├── Services/               # Helper Services
-│   │   ├── ServiceConfiguration.cs
-│   │   ├── UndoRedoService.cs
-│   │   └── SettingsService.cs
-│   └── MainWindow.axaml        # Main Window
-│
-└── ReCap.CommonUI/             # Shared UI Components
-```
 
 ## How to Use
 
@@ -137,6 +110,4 @@ foreach (var child in root.Children)
 
 - [ ] Implement binary serialization (saving changes)
 - [ ] Add Enum editing with ComboBox
-- [ ] TreeView virtualization for large files
 - [ ] Asset diff/compare functionality
-- [ ] Asset read using `catalog_%d.bin`
