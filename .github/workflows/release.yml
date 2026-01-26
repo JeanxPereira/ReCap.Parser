@@ -20,15 +20,12 @@ jobs:
           - os: windows-latest
             name: Windows
             rid: win-x64
-            ext: .exe
           - os: ubuntu-latest
             name: Linux
             rid: linux-x64
-            ext: ""
           - os: macos-latest
             name: MacOS
             rid: osx-x64
-            ext: ""
 
     steps:
     - name: Checkout Code
@@ -39,28 +36,49 @@ jobs:
       with:
         dotnet-version: 9.0.x
 
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
     - name: Restore Dependencies
       run: dotnet restore ReCap.Parser.sln
+    - name: Run Tests
+      run: dotnet test ReCap.Parser.sln --no-restore --verbosity normal
 
     - name: Build Core Library
-      run: |
-        dotnet build src/Core/ReCap.Parser.csproj -c Release -o output/core
+      run: dotnet build src/Core/ReCap.Parser.csproj -c Release -o output/core --no-restore
 
     - name: Publish CLI
-      run: |
-        dotnet publish src/CLI/ReCap.Parser.CLI.csproj -c Release -r ${{ matrix.rid }} --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o output/cli
+      run: >
+        dotnet publish src/CLI/ReCap.Parser.CLI.csproj 
+        -c Release 
+        -r ${{ matrix.rid }} 
+        --self-contained true 
+        -p:PublishSingleFile=true 
+        -p:IncludeNativeLibrariesForSelfExtract=true 
+        --no-restore
 
     - name: Publish Editor
-      run: |
-        dotnet publish src/Editor/ReCap.Parser.Editor.csproj -c Release -r ${{ matrix.rid }} --self-contained true -o output/editor
+      run: >
+        dotnet publish src/Editor/ReCap.Parser.Editor.csproj 
+        -c Release 
+        -r ${{ matrix.rid }} 
+        --self-contained true 
+        --no-restore
 
-    - name: Zip Artifacts
+    - name: Package Artifacts
       shell: pwsh
       run: |
-        $osName = "${{ matrix.name }}"
-        Compress-Archive -Path "output/cli/*" -DestinationPath "ReCap-CLI-$osName.zip"
-        Compress-Archive -Path "output/editor/*" -DestinationPath "ReCap-Editor-$osName.zip"
-        Compress-Archive -Path "output/core/*" -DestinationPath "ReCap-Core-$osName.zip"
+        $cliDir = "src/CLI/ReCap.Parser.CLI/bin/Release/net9.0/${{ matrix.rid }}/publish"
+        $editorDir = "src/Editor/ReCap.Parser.Editor/bin/Release/net9.0/${{ matrix.rid }}/publish"
+        
+        Compress-Archive -Path "$cliDir/*" -DestinationPath "ReCap-CLI-${{ matrix.name }}.zip"
+        Compress-Archive -Path "$editorDir/*" -DestinationPath "ReCap-Editor-${{ matrix.name }}.zip"
+        Compress-Archive -Path "output/core/*" -DestinationPath "ReCap-Core-${{ matrix.name }}.zip"
 
     - name: Upload Build Artifacts
       uses: actions/upload-artifact@v4

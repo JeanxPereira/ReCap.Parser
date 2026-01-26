@@ -4,6 +4,9 @@
 # ReCap files
 # ReCap.CommonUI/
 
+# Visual Studio
+.vs/
+
 # User-specific files
 *.suo
 *.user

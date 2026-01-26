@@ -69,6 +69,7 @@ flowchart LR
 - **CommunityToolkit.Mvvm 8.4** - Source generators for clean MVVM
 - **Span<byte>** - Optimized binary reading
 - **Dependency Injection** - Microsoft.Extensions.DependencyInjection
+- **ReCap.CommonUI** - using native UI of ReCap Project made by Splitwirez
 
 ## Folder Structure
 
