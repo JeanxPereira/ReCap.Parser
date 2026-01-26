@@ -1,57 +1,45 @@
-name: Update Wiki
+name: Wiki Catalog
+
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'src/Core/Catalog/**'
-      - 'src/Core/TypeSystem.cs'
-      - 'src/CLI/Commands/WikiCatalog.cs'
-      - '.github/workflows/update-wiki.yml'
   workflow_dispatch:
-    
-permissions:
-  contents: write
+  push:
+    branches: [ main ]
 
 jobs:
-  update-wiki:
-    name: Sync Documentation
+  generate-wiki:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
 
-      - name: Checkout Wiki Repo
+    steps:
+      - name: Checkout main repo
         uses: actions/checkout@v4
-        with:
-          repository: ${{ github.repository }}.wiki
-          path: wiki_content
-          token: ${{ secrets.WIKI_ACTION_TOKEN }}
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
 
-      - name: Build CLI
-        run: dotnet build src/CLI/ReCap.Parser.CLI.csproj -c Release
+      - name: Build
+        run: dotnet build
 
-      - name: Run Wiki Generator
+      - name: Generate wiki content
         run: |
-          dotnet run --project src/CLI/ReCap.Parser.CLI.csproj -c Release -- wiki-gen wiki_content
+          dotnet run --project src/CLI -- wiki wiki_content
 
-      - name: Push Changes
-        working-directory: wiki_content
+      - name: Clone wiki repository
         run: |
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/JeanxPereira/ReCap.Parser.wiki.git wiki
+
+      - name: Sync wiki content
+        run: |
+          rm -rf wiki/Catalog
+          cp -r wiki_content/* wiki/
+
+      - name: Commit and push wiki
+        run: |
+          cd wiki
           git config user.name "ReCap Bot"
-          git config user.email "bot@recap-parser.com"
-          
+          git config user.email "actions@github.com"
+
           git add .
-          
-          if ! git diff-index --quiet HEAD; then
-            echo "Changes detected. Pushing to Wiki..."
-            git commit -m "Auto-update: Catalog Reference"
-            git push
-          else
-            echo "No changes detected. Skipping push to save resources."
-          fi
+          git diff --cached --quiet || git commit -m "Auto-update: Catalog Reference"
+          git push
