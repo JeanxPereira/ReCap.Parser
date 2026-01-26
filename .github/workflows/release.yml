@@ -20,12 +20,15 @@ jobs:
           - os: windows-latest
             name: Windows
             rid: win-x64
+            ext: .exe
           - os: ubuntu-latest
             name: Linux
             rid: linux-x64
+            ext: ""
           - os: macos-latest
             name: MacOS
             rid: osx-x64
+            ext: ""
 
     steps:
     - name: Checkout Code
@@ -50,9 +53,6 @@ jobs:
     - name: Run Tests
       run: dotnet test ReCap.Parser.sln --no-restore --verbosity normal
 
-    - name: Build Core Library
-      run: dotnet build src/Core/ReCap.Parser.csproj -c Release -o output/core --no-restore
-
     - name: Publish CLI
       run: >
         dotnet publish src/CLI/ReCap.Parser.CLI.csproj 
@@ -61,6 +61,7 @@ jobs:
         --self-contained true 
         -p:PublishSingleFile=true 
         -p:IncludeNativeLibrariesForSelfExtract=true 
+        -o ./publish-cli
         --no-restore
 
     - name: Publish Editor
@@ -69,24 +70,24 @@ jobs:
         -c Release 
         -r ${{ matrix.rid }} 
         --self-contained true 
+        -o ./publish-editor
         --no-restore
 
-    - name: Package Artifacts
+    - name: Prepare Assets
       shell: pwsh
       run: |
-        $cliDir = "src/CLI/ReCap.Parser.CLI/bin/Release/net9.0/${{ matrix.rid }}/publish"
-        $editorDir = "src/Editor/ReCap.Parser.Editor/bin/Release/net9.0/${{ matrix.rid }}/publish"
-        
-        if (Test-Path $cliDir) { Compress-Archive -Path "$cliDir/*" -DestinationPath "ReCap-CLI-${{ matrix.name }}.zip" }
-        if (Test-Path $editorDir) { Compress-Archive -Path "$editorDir/*" -DestinationPath "ReCap-Editor-${{ matrix.name }}.zip" }
-        if (Test-Path "output/core") { Compress-Archive -Path "output/core/*" -DestinationPath "ReCap-Core-${{ matrix.name }}.zip" }
+        Move-Item "./publish-cli/ReCap.Parser.CLI${{ matrix.ext }}" "./ReCap-CLI-${{ matrix.name }}${{ matrix.ext }}"
+        if (Test-Path "./publish-editor/ReCap.Parser.Editor${{ matrix.ext }}") {
+          Move-Item "./publish-editor/ReCap.Parser.Editor${{ matrix.ext }}" "./ReCap-Editor-${{ matrix.name }}${{ matrix.ext }}"
+        }
 
     - name: Upload Build Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: ReCap-Builds-${{ matrix.name }}
         path: |
-          *.zip
+          ReCap-CLI-${{ matrix.name }}${{ matrix.ext }}
+          ReCap-Editor-${{ matrix.name }}${{ matrix.ext }}
 
   release:
     name: Create Release
@@ -105,7 +106,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: artifacts/*.zip
+          files: artifacts/*
           draft: false
           prerelease: false
           generate_release_notes: true
