@@ -32,11 +32,17 @@ public partial class PackageEntryViewModel : ObservableObject
     [ObservableProperty]
     private string _sourceFile = string.Empty;
     
+    [ObservableProperty]
+    private List<string> _tags = new();
+    
     /// <summary>Full virtual name (name.type).</summary>
     public string FullName => string.IsNullOrEmpty(Type) ? Name : $"{Name}.{Type}";
     
     /// <summary>Formatted compile time.</summary>
     public string CompileTimeFormatted => DateTimeOffset.FromUnixTimeSeconds(CompileTime).ToString("yyyy-MM-dd HH:mm:ss");
+    
+    /// <summary>Tags as comma-separated string for display.</summary>
+    public string TagsDisplay => Tags.Count == 0 ? "" : string.Join(", ", Tags);
 }
 
 /// <summary>
@@ -256,6 +262,15 @@ public partial class PackageBrowserViewModel : ObservableObject
                         case "sourceFileNameWType" when field is StringNode sn:
                             vm.SourceFile = sn.Value;
                             break;
+                            
+                        case "tags" when field is ArrayNode an:
+                            // Extract tags from array
+                            foreach (var tagNode in an.Children.OfType<StringNode>())
+                            {
+                                if (!string.IsNullOrWhiteSpace(tagNode.Value))
+                                    vm.Tags.Add(tagNode.Value);
+                            }
+                            break;
                     }
                 }
                 
@@ -299,8 +314,61 @@ public partial class PackageBrowserViewModel : ObservableObject
                 return;
             }
             
-            var root = await Task.Run(() => 
-                _assetService.Parser.Parse(data, fileType.RootStruct, fileType.HeaderSize));
+            // Debug info
+            Console.WriteLine($"Loading {SelectedEntry.FullName}:");
+            Console.WriteLine($"  Data size: {data.Length} bytes");
+            Console.WriteLine($"  Type: {SelectedEntry.Type}");
+            Console.WriteLine($"  Root struct: {fileType.RootStruct}");
+            Console.WriteLine($"  Header size: {fileType.HeaderSize}");
+            
+            // Validate data size
+            if (data.Length < fileType.HeaderSize)
+            {
+                StatusText = $"Error: Asset data ({data.Length} bytes) is smaller than header size ({fileType.HeaderSize} bytes)";
+                return;
+            }
+            
+            AssetNode root;
+            try
+            {
+                root = await Task.Run(() => 
+                    _assetService.Parser.Parse(data, fileType.RootStruct, fileType.HeaderSize));
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                // Try with different header sizes as fallback
+                Console.WriteLine($"Parse failed with header size {fileType.HeaderSize}, trying alternatives...");
+                
+                int[] alternativeHeaders = [0, 4, 8, 12, 16];
+                root = null!;
+                Exception? lastException = ex;
+                
+                foreach (var altHeader in alternativeHeaders)
+                {
+                    if (altHeader == fileType.HeaderSize) continue;
+                    if (data.Length < altHeader) continue;
+                    
+                    try
+                    {
+                        Console.WriteLine($"  Trying header size: {altHeader}");
+                        root = await Task.Run(() => 
+                            _assetService.Parser.Parse(data, fileType.RootStruct, altHeader));
+                        Console.WriteLine($"  Success with header size {altHeader}!");
+                        break;
+                    }
+                    catch (Exception altEx)
+                    {
+                        Console.WriteLine($"  Failed: {altEx.Message}");
+                        lastException = altEx;
+                    }
+                }
+                
+                if (root == null)
+                {
+                    StatusText = $"Error: Could not parse asset with any header size\n{lastException?.Message}";
+                    return;
+                }
+            }
             
             AssetOpened?.Invoke(root, SelectedEntry.FullName);
             StatusText = $"Opened: {SelectedEntry.FullName}";
@@ -308,6 +376,7 @@ public partial class PackageBrowserViewModel : ObservableObject
         catch (Exception ex)
         {
             StatusText = $"Error: {ex.Message}";
+            Console.WriteLine($"Full error:\n{ex}");
         }
         finally
         {
@@ -328,10 +397,14 @@ public partial class PackageBrowserViewModel : ObservableObject
         if (SelectedTypeFilter != "All")
             query = query.Where(e => e.Type.Equals(SelectedTypeFilter, StringComparison.OrdinalIgnoreCase));
         
-        // Search filter
+        // Search filter - searches in name, full name, and tags
         if (!string.IsNullOrWhiteSpace(SearchText))
-            query = query.Where(e => e.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
-                                     e.FullName.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
+        {
+            query = query.Where(e => 
+                e.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+                e.FullName.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+                e.Tags.Any(tag => tag.Contains(SearchText, StringComparison.OrdinalIgnoreCase)));
+        }
         
         foreach (var entry in query.OrderBy(e => e.Name))
             FilteredEntries.Add(entry);

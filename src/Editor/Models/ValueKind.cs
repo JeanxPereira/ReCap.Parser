@@ -13,7 +13,7 @@ namespace ReCap.Parser.Editor.Models
     {
         String = ReCap.Parser.AssetNodeKind.String,
         Number = ReCap.Parser.AssetNodeKind.Number,
-        Boolean = ReCap.Parser.AssetNodeKind.Boolean,
+        Bool = ReCap.Parser.AssetNodeKind.Bool,
         Struct = ReCap.Parser.AssetNodeKind.Struct,
         Array = ReCap.Parser.AssetNodeKind.Array
     }

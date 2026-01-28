@@ -38,6 +38,41 @@
         HorizontalAlignment="Left" VerticalAlignment="Center" />
     </DataTemplate>
     
+    <!-- Vector Value Editor (Vector2/3/4/Orientation) -->
+    <DataTemplate DataType="core:VectorNode">
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <StackPanel Orientation="Horizontal" Spacing="2">
+          <TextBlock Text="X:" VerticalAlignment="Center" Opacity="0.6" />
+          <NumericUpDown Value="{Binding X, Mode=TwoWay}" 
+            Width="80" BorderThickness="0" Padding="4,0" 
+            FormatString="F4" Increment="0.1" />
+        </StackPanel>
+        
+        <StackPanel Orientation="Horizontal" Spacing="2">
+          <TextBlock Text="Y:" VerticalAlignment="Center" Opacity="0.6" />
+          <NumericUpDown Value="{Binding Y, Mode=TwoWay}" 
+            Width="80" BorderThickness="0" Padding="4,0" 
+            FormatString="F4" Increment="0.1" />
+        </StackPanel>
+        
+        <StackPanel Orientation="Horizontal" Spacing="2" 
+                    IsVisible="{Binding ComponentCount, Converter={x:Static local:MainWindow.GreaterThan2Converter}}">
+          <TextBlock Text="Z:" VerticalAlignment="Center" Opacity="0.6" />
+          <NumericUpDown Value="{Binding Z, Mode=TwoWay}" 
+            Width="80" BorderThickness="0" Padding="4,0" 
+            FormatString="F4" Increment="0.1" />
+        </StackPanel>
+        
+        <StackPanel Orientation="Horizontal" Spacing="2" 
+                    IsVisible="{Binding ComponentCount, Converter={x:Static local:MainWindow.GreaterThan3Converter}}">
+          <TextBlock Text="W:" VerticalAlignment="Center" Opacity="0.6" />
+          <NumericUpDown Value="{Binding W, Mode=TwoWay}" 
+            Width="80" BorderThickness="0" Padding="4,0" 
+            FormatString="F4" Increment="0.1" />
+        </StackPanel>
+      </StackPanel>
+    </DataTemplate>
+    
     <!-- Enum Value Display (read-only for now, could add ComboBox) -->
     <DataTemplate DataType="core:EnumNode">
       <TextBlock Text="{Binding DisplayValue}" 

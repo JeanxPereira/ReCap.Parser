@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using ReCap.Parser;
@@ -50,6 +51,18 @@ public partial class PackageBrowserWindow : Window
     private void OnAssetOpened(AssetNode root, string name)
     {
         AssetOpened?.Invoke(root, name);
+    }
+    
+    /// <summary>
+    /// Handle double-click on DataGrid to open asset.
+    /// </summary>
+    private async void OnDataGridDoubleTapped(object? sender, TappedEventArgs e)
+    {
+        // Check if an entry is selected
+        if (ViewModel?.SelectedEntry == null) return;
+        
+        // Open the selected asset
+        await ViewModel.OpenSelectedAssetAsync();
     }
     
     /// <summary>

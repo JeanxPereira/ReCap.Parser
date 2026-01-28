@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data.Converters;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -33,6 +35,13 @@ public partial class MainWindow : Window
         get => GetValue(TypeColWidthProperty);
         set => SetValue(TypeColWidthProperty, value);
     }
+
+    // Converters for Vector component visibility
+    public static readonly IValueConverter GreaterThan2Converter = 
+        new FuncValueConverter<int, bool>(count => count > 2);
+    
+    public static readonly IValueConverter GreaterThan3Converter = 
+        new FuncValueConverter<int, bool>(count => count > 3);
 
     private MainViewModel? ViewModel => DataContext as MainViewModel;
     private PackageBrowserWindow? _packageBrowser;
@@ -272,12 +281,19 @@ public partial class MainWindow : Window
 
         try
         {
-            // Direct load via ViewModel - no XML bridge!
+            // Load file and update root node name to show filename instead of type
             await ViewModel!.LoadFileAsync(path);
+            
+            // Update root node name to filename without extension
+            if (ViewModel.Roots.Count > 0)
+            {
+                var fileName = Path.GetFileNameWithoutExtension(path);
+                ViewModel.Roots[0].Name = fileName;
+            }
         }
         catch (Exception ex)
         {
-            await ShowMessageBox($"Failed to load file:\n{ex.Message}");
+            await ShowMessageBox($"Failed to load file:\n{ex.Message}\n\nStack trace:\n{ex.StackTrace}");
         }
     }
 
@@ -301,6 +317,14 @@ public partial class MainWindow : Window
         if (ViewModel == null) return;
         
         ViewModel.SetRoot(root);
+        
+        // Set name to filename without extension
+        var fileNameWithoutExt = assetName;
+        var lastDot = assetName.LastIndexOf('.');
+        if (lastDot > 0)
+            fileNameWithoutExt = assetName[..lastDot];
+        
+        root.Name = fileNameWithoutExt;
         ViewModel.CurrentFilePath = $"[Package] {assetName}";
         ViewModel.IsDirty = false;
         
@@ -443,7 +467,7 @@ public partial class MainWindow : Window
         var tv = this.FindControl<TreeView>("Tree");
         if (tv == null || ViewModel?.Selected == null) return;
         var c = FindContainer(tv, ViewModel.Selected);
-        if (c != null) tv.CollapseSubTree(c);
+        if (c != null) CollapseSubTree(c);
     }
 
     private void OnExpandAllClick(object? sender, RoutedEventArgs e) => ExpandAll();
