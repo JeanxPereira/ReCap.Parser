@@ -150,5 +150,13 @@ public sealed class Enums : AssetCatalog
             .Value("captain horizontal", 15)
             .Value("boss vertical", 16)
             .Value("boss horizontal", 17);
+
+        Enum("LevelType")
+            .Value("plasma", 3)
+            .Value("necro", 4)
+            .Value("bio", 2)
+            .Value("cyber", 0)
+            .Value("chrono", 1)
+            .Value("generic", 5);
     }
 }
