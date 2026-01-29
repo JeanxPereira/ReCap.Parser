@@ -76,8 +76,8 @@ public static class WikiCatalog
         sb.AppendLine("    align=\"center\"");
         sb.AppendLine("  />");
         sb.AppendLine("  Darkspore AssetData");
-        sb.AppendLine("</h3>");
-
+        sb.AppendLine("</h3>\n");
+        sb.AppendLine(" \n");
         sb.AppendLine("## Base");
         sb.AppendLine("* **[Home](https://github.com/JeanxPereira/ReCap.Parser/wiki/Home )**");
         sb.AppendLine();

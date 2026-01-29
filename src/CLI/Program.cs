@@ -354,7 +354,7 @@ public static partial class Program
                     try
                     {
                         Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.WriteLine($"=== Processing: {randomAsset} ===");
+                        Console.WriteLine($"[Processing: {randomAsset}]");
                         Console.ResetColor();
                         
                         var result = ProcessSingleAsset(dbpf, randomAsset, registryDir, outputDir, verbose);
@@ -380,7 +380,7 @@ public static partial class Program
                 {
                     Console.WriteLine();
                     Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($"=== Summary ===");
+                    Console.WriteLine($"[Result]:");
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine($"Success: {successCount}");
                     if (failCount > 0)
