@@ -1,5 +1,5 @@
 <div align="center">
-  <img src=".github/icon.png" alt="ReCapParser Logo" width="256" />
+  <img src=".github/icon.png" alt="AssetData.Parser Logo" width="256" />
 </div>
 
 <h1 align="center">AssetData Parser</h1>

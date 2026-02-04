@@ -47,6 +47,15 @@ jobs:
       with:
         dotnet-version: 9.0.x
 
+    - name: Get Version
+      shell: bash
+      run: |
+        if [[ $GITHUB_REF == refs/tags/* ]]; then
+          echo "APP_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        else
+          echo "APP_VERSION=dev-${GITHUB_SHA::7}" >> $GITHUB_ENV
+        fi
+
     - name: Cache NuGet packages
       uses: actions/cache@v4
       with:
@@ -84,23 +93,15 @@ jobs:
         -p:IncludeAllContentForSelfExtract=true
         -o ./publish-editor
 
-    - name: List published CLI files (Debug)
-      shell: pwsh
-      run: Get-ChildItem "./publish-cli" -Recurse | ForEach-Object { Write-Host "$($_.Length) bytes - $($_.FullName)" }
-
-    - name: List published Editor files (Debug)
-      shell: pwsh
-      run: Get-ChildItem "./publish-editor" -Recurse | ForEach-Object { Write-Host "$($_.Length) bytes - $($_.FullName)" }
-
     - name: Prepare CLI Asset
       shell: pwsh
       run: |
         $cliFiles = Get-ChildItem "./publish-cli" -File | Where-Object { 
-          $_.Name -like "ReCap*" -and ($_.Extension -eq ".exe" -or $_.Extension -eq "" -or $_.Extension -eq $null)
+          $_.Name -like "AssetData*" -and ($_.Extension -eq ".exe" -or $_.Extension -eq "" -or $_.Extension -eq $null)
         }
         $cliFile = $cliFiles | Sort-Object Length -Descending | Select-Object -First 1
         if ($cliFile) {
-          $destName = "ReCap-CLI-${{ matrix.name }}${{ matrix.ext }}"
+          $destName = "AssetData-CLI-${{ env.APP_VERSION }}-${{ matrix.name }}${{ matrix.ext }}"
           Write-Host "Moving CLI: $($cliFile.FullName) -> $destName"
           Copy-Item $cliFile.FullName "./$destName" -Force
         } else {
@@ -112,11 +113,11 @@ jobs:
       shell: pwsh
       run: |
         $editorFiles = Get-ChildItem "./publish-editor" -File | Where-Object { 
-          $_.Name -like "ReCap*" -and ($_.Extension -eq ".exe" -or $_.Extension -eq "" -or $_.Extension -eq $null)
+          $_.Name -like "AssetData*" -and ($_.Extension -eq ".exe" -or $_.Extension -eq "" -or $_.Extension -eq $null)
         }
         $editorFile = $editorFiles | Sort-Object Length -Descending | Select-Object -First 1
         if ($editorFile) {
-          $destName = "ReCap-Editor-${{ matrix.name }}${{ matrix.ext }}"
+          $destName = "AssetData-Editor-${{ env.APP_VERSION }}-${{ matrix.name }}${{ matrix.ext }}"
           Write-Host "Moving Editor: $($editorFile.FullName) ($($editorFile.Length) bytes) -> $destName"
           Copy-Item $editorFile.FullName "./$destName" -Force
         } else {
@@ -127,12 +128,11 @@ jobs:
     - name: Verify artifact sizes
       shell: pwsh
       run: |
-        $cli = Get-Item "./ReCap-CLI-${{ matrix.name }}${{ matrix.ext }}"
-        $editor = Get-Item "./ReCap-Editor-${{ matrix.name }}${{ matrix.ext }}"
+        $cli = Get-Item "./AssetData-CLI-${{ env.APP_VERSION }}-${{ matrix.name }}${{ matrix.ext }}"
+        $editor = Get-Item "./AssetData-Editor-${{ env.APP_VERSION }}-${{ matrix.name }}${{ matrix.ext }}"
         Write-Host "CLI size: $($cli.Length / 1MB) MB"
         Write-Host "Editor size: $($editor.Length / 1MB) MB"
         
-        # Editor should be at least 50MB for self-contained Avalonia app
         if ($editor.Length -lt 50MB) {
           Write-Warning "Editor file seems too small! Expected ~100MB+ for self-contained Avalonia app"
         }
@@ -140,15 +140,15 @@ jobs:
     - name: Upload CLI Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ReCap-CLI-${{ matrix.name }}
-        path: ReCap-CLI-${{ matrix.name }}${{ matrix.ext }}
+        name: AssetData-CLI-${{ matrix.name }}
+        path: AssetData-CLI-${{ env.APP_VERSION }}-${{ matrix.name }}${{ matrix.ext }}
         if-no-files-found: error
 
     - name: Upload Editor Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ReCap-Editor-${{ matrix.name }}
-        path: ReCap-Editor-${{ matrix.name }}${{ matrix.ext }}
+        name: AssetData-Editor-${{ matrix.name }}
+        path: AssetData-Editor-${{ env.APP_VERSION }}-${{ matrix.name }}${{ matrix.ext }}
         if-no-files-found: error
 
   release:
