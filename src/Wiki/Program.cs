@@ -170,25 +170,35 @@ public static class Program
         sb.AppendLine("    align=\"center\"");
         sb.AppendLine("  />");
         sb.AppendLine("  Darkspore AssetData");
-        sb.AppendLine("</h3>\n");
-        sb.AppendLine(" \n");
+        sb.AppendLine("</h3>");
+        sb.AppendLine();
+        
         sb.AppendLine("## Base");
         sb.AppendLine("* **[Home](https://github.com/JeanxPereira/ReCap.Parser/wiki/Home )**");
         sb.AppendLine();
 
         sb.AppendLine("## Catalog Assets");
         
-        sb.AppendLine("  * **Structures**");
+        // Structures with details/summary
+        sb.AppendLine("  <details>");
+        sb.AppendLine("  <summary>Structures</summary>");
+        sb.AppendLine();
         foreach (var s in structs.OrderBy(x => x))
         {
-            sb.AppendLine($"    * [[{s}]]");
+            sb.AppendLine($"  * [[{s}]]");
         }
+        sb.AppendLine("  </details>");
         
-        sb.AppendLine("  * **Enums**");
+        // Enums with details/summary
+        sb.AppendLine("  <details>");
+        sb.AppendLine("  <summary>Enums</summary>");
+        sb.AppendLine();
         foreach (var e in enums.OrderBy(x => x))
         {
-            sb.AppendLine($"    * [[{e}]]");
+            sb.AppendLine($"  * [[{e}]]");
         }
+        sb.AppendLine("  </details>");
+        sb.AppendLine();
 
         File.WriteAllText(Path.Combine(outputDir, "_Sidebar.md"), sb.ToString());
     }
