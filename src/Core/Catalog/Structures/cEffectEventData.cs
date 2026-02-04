@@ -14,8 +14,8 @@ public sealed class cEffectEventData : AssetCatalog
             Field("bCreatureOrientationAlignment", DataType.Bool, 0x14),
             Field("bUseTargetPoint", DataType.Bool, 0x15),
             Field("bSetDirectionFromSecondaryObject", DataType.Bool, 0x16),
-            NStruct("objectHardpoint", "cHardpointInfo", 0x28),
-            NStruct("secondaryObjectHardpoint", "cHardpointInfo", 0x2c),
+            //NStruct("objectHardpoint", "cHardpointInfo", 0x28), // TODO
+            //NStruct("secondaryObjectHardpoint", "cHardpointInfo", 0x2c),
             Field("screenShakeScaleLocalPlayer", DataType.Float, 0x30),
             Field("screenShakeScaleEveryone", DataType.Float, 0x34),
             Field("screenShakeScaleLocalPlayerCritical", DataType.Float, 0x38),

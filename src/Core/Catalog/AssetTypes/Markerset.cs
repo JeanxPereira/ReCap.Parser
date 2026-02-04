@@ -8,7 +8,7 @@ public sealed class Markerset : AssetCatalog
             ArrayStruct("markers", "cLabsMarker", 0x0),
             Field("group", DataType.Key, 0x14),
             Field("weight", DataType.Float, 0x18),
-            Array("condition", DataType.Enum, 0x20) // TODO: add Enum type for Arrays
+            Array("condition", DataType.Enum, 0x20)
         );
     }
 }

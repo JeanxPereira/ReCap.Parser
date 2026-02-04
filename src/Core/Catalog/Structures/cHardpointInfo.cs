@@ -4,7 +4,7 @@ public sealed class cHardpointInfo : AssetCatalog
 {
     protected override void Build()
     {
-        Struct("cHardpointInfo", 0x20,
+        Struct("cHardpointInfo", 0x18,
             Field("type", DataType.Enum, 0x0),
             Field("bodyCap", DataType.Enum, 0x4),
             Field("localOffset", DataType.Vector3, 0x8),
